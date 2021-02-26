@@ -8,8 +8,9 @@ import sqlite3 as s
 import json
 import os
 
-EDGE_FAVICONS_FILEPATH = "C:/Users/cgrab/AppData/Local/Microsoft/Edge/User Data/Default/Favicons"
-EDGE_BOOKMARKS_FILEPATH = "C:/Users/cgrab/AppData/Local/Microsoft/Edge/User Data/Default/Bookmarks"
+NAME_OF_USER = "cgrab"
+EDGE_FAVICONS_FILEPATH = "C:/Users/" + NAME_OF_USER + "/AppData/Local/Microsoft/Edge/User Data/Default/Favicons"
+EDGE_BOOKMARKS_FILEPATH = "C:/Users/" + NAME_OF_USER + "/AppData/Local/Microsoft/Edge/User Data/Default/Bookmarks"
 
 
 def tupleToValueString(tuple): 
@@ -83,6 +84,8 @@ def createEdgeDatabase(urls):
     #makes new list of icon_ids
     iconIdList = []
     
+    #goes through database, matches icon maps to url in bookmark
+    #iconId list used to match with bitmaps
     idNum = 1
     for row in cur.fetchall():
            if (row[1] in urls):
@@ -95,22 +98,18 @@ def createEdgeDatabase(urls):
                
                iconIdList.append(row[2])
                idNum += 1
-    #commits changes
-    newcon.commit()
-    print("Changes committed!")
 
 
     #grabs data from favicon_bitmaps
     cur.execute("SELECT * FROM favicon_bitmaps")
     
-    #list of favicon ids
+    #list of favicon bitmap ids that correlate to favicons table
     bitmapIdList = []
 
     idNum = 1
     for row in cur.fetchall():
         if (row[1] in iconIdList):
-            #adds second value of favicon to list
-            #num/2 is the id in favicons table
+            #adds second row of a favicon to list
             if (row[0] % 2 == 0):
                 bitmapIdList.append(row[0])
             newcur.execute("INSERT INTO favicon_bitmaps VALUES(?,?,?,?,?,?,?);", row)
@@ -120,9 +119,32 @@ def createEdgeDatabase(urls):
                     WHERE last_updated=?;
                     """, (idNum, row[2]))
             idNum += 1
+    
+
+    #divides all values of bitmapIdList by 2 to use for favicons
+    faviconIdList = [each//2 for each in bitmapIdList]
+    print(faviconIdList)
+
+    #grabs data from favicons
+    cur.execute("SELECT * FROM favicons")
+
+    idNum = 1
+    for row in cur.fetchall():
+        if (row[0] in faviconIdList):
+            newcur.execute("INSERT INTO favicons VALUES(?,?,?);", row)
+            newcur.execute("""
+                    UPDATE favicons
+                    SET id=?
+                    WHERE url=?;
+                    """, (idNum, row[1]))
+            idNum += 1
     #commit changes
     newcon.commit()
-    print(bitmapIdList)
+
+    #copies 'meta' table from original file
+    newcur.execute("""
+        ATTACH '""" + EDGE_FAVICONS_FILEPATH + """' AS oldFav;
+    """)
 
     #close databse curosrs and connections
     cur.close()
