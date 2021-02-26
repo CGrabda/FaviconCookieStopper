@@ -4,13 +4,22 @@ Written by Christopher Grabda
 Gets names of bookmarked sites and cross-references, with favicons
 Saves list of matched favicons and overwrites the Favicons file
 '''
+import configparser
 import sqlite3 as s
 import json
 import os
 
-NAME_OF_USER = "cgrab"
-EDGE_FAVICONS_FILEPATH = "C:/Users/" + NAME_OF_USER + "/AppData/Local/Microsoft/Edge/User Data/Default/Favicons"
-EDGE_BOOKMARKS_FILEPATH = "C:/Users/" + NAME_OF_USER + "/AppData/Local/Microsoft/Edge/User Data/Default/Bookmarks"
+config = configparser.ConfigParser()
+config.read("config.ini")
+#gets settings data from config.ini
+USER_PATH = config.get("Settings", "USER_PATH")
+HAS_MSEDGE = config.get("Settings", "HAS_MSEDGE")
+HAS_CHROME = config.get("Settings", "HAS_CHROME")
+HAS_FFOX = config.get("Settings", "HAS_FFOX")
+
+#filepaths for msedge Favicons database and Bookmarks library
+EDGE_FAVICONS_FILEPATH = USER_PATH + "/AppData/Local/Microsoft/Edge/User Data/Default/Favicons"
+EDGE_BOOKMARKS_FILEPATH = USER_PATH +  "/AppData/Local/Microsoft/Edge/User Data/Default/Bookmarks"
 
 
 def tupleToValueString(tuple): 
@@ -138,13 +147,15 @@ def createEdgeDatabase(urls):
                     WHERE url=?;
                     """, (idNum, row[1]))
             idNum += 1
-    #commit changes
-    newcon.commit()
+    
 
     #copies 'meta' table from original file
     newcur.execute("""
         ATTACH '""" + EDGE_FAVICONS_FILEPATH + """' AS oldFav;
     """)
+
+    #commit changes
+    newcon.commit()
 
     #close databse curosrs and connections
     cur.close()
@@ -152,7 +163,17 @@ def createEdgeDatabase(urls):
     con.close()
     newcon.close()
 
+def replaceEdgeFavicons():
+    return
+
 if __name__ == "__main__":
-    urls = parseEdgeBookmarks(EDGE_BOOKMARKS_FILEPATH)
-    print(len(urls))
-    createEdgeDatabase(urls)
+    if (HAS_MSEDGE):
+        urls = parseEdgeBookmarks(EDGE_BOOKMARKS_FILEPATH)
+        print(len(urls))
+        createEdgeDatabase(urls)
+
+    if (HAS_CHROME):
+        pass
+    
+    if (HAS_FFOX):
+        pass
