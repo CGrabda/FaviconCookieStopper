@@ -13,9 +13,9 @@ def ynInput(message):
             print("----------------\nInvalid Input\n----------------")
         
         if (userInput == "y"):
-            return "TRUE"
+            return "True"
         elif (userInput == "n"):
-            return "FALSE"
+            return "False"
     
 def pathInput():
     print()

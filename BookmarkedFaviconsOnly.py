@@ -22,6 +22,9 @@ HAS_FFOX = config.get("Settings", "HAS_FFOX")
 EDGE_FAVICONS_FILEPATH = USER_PATH + "/AppData/Local/Microsoft/Edge/User Data/Default/Favicons"
 EDGE_BOOKMARKS_FILEPATH = USER_PATH +  "/AppData/Local/Microsoft/Edge/User Data/Default/Bookmarks"
 
+#filepaths for Chrome Favicons database and Bookmarks library
+CHROME_FAVICONS_FILEPATH = USER_PATH + "/AppData/Local/Google/Chrome/UserData/Default/Favicons"
+CHROME_BOOKMARKS_FILEPATH = USER_PATH + "/AppData/Local/Google/Chrome/UserData/Default/Bookmarks"
 
 def tupleToValueString(tuple): 
     string = "("
@@ -30,7 +33,7 @@ def tupleToValueString(tuple):
     string += ")"
     return string
 
-def parseEdgeBookmarks(filename):
+def parseBookmarks(filename):
     #stores list of bookmarked URLs
     url_list = []
 
@@ -43,7 +46,7 @@ def parseEdgeBookmarks(filename):
     
     return url_list
 
-def createEdgeDatabase(urls):
+def createDatabase(urls, faviconsfile):
     #deletes existing newFavicons file
     try:
         os.remove("Favicons")
@@ -91,7 +94,7 @@ def createEdgeDatabase(urls):
 
 
     #initialize edge database
-    con = s.connect(EDGE_FAVICONS_FILEPATH)
+    con = s.connect(faviconsfile)
     cur = con.cursor()
 
     #grabs data from icon_mapping
@@ -143,7 +146,7 @@ def createEdgeDatabase(urls):
     #grabs data from favicons
     cur.execute("SELECT * FROM favicons")
 
-    idNum = 1
+
     for row in cur.fetchall():
         if (row[0] in faviconIdList):
             newcur.execute("INSERT INTO favicons VALUES(?,?,?);", row)
@@ -151,12 +154,11 @@ def createEdgeDatabase(urls):
                     UPDATE favicons
                     SET id=?
                     WHERE url=?;
-                    """, (idNum, row[1]))
-            idNum += 1
+                    """, (row[0], row[1]))
     
 
     #copies 'meta' table from original file
-    newcur.execute("ATTACH '" + EDGE_FAVICONS_FILEPATH + "' AS oldFav;")
+    newcur.execute("ATTACH '" + faviconsfile + "' AS oldFav;")
     newcur.execute("INSERT INTO meta SELECT * FROM oldFav.meta;")
     
 
@@ -173,13 +175,15 @@ def replaceEdgeFavicons():
     return
 
 if __name__ == "__main__":
-    if (HAS_MSEDGE):
-        urls = parseEdgeBookmarks(EDGE_BOOKMARKS_FILEPATH)
-        createEdgeDatabase(urls)
+    if (HAS_MSEDGE == "True"):
+        urls = parseBookmarks(EDGE_BOOKMARKS_FILEPATH)
+        createDatabase(urls, EDGE_FAVICONS_FILEPATH)
         copyfile("Favicons", EDGE_FAVICONS_FILEPATH)
 
-    if (HAS_CHROME):
-        pass
+    if (HAS_CHROME == "True"):
+        urls = parseBookmarks(CHROME_BOOKMARKS_FILEPATH)
+        createDatabase(urls, CHROME_FAVICONS_FILEPATH)
+        copyfile("Favicons", CHROME_FAVICONS_FILEPATH)
     
-    if (HAS_FFOX):
+    if (HAS_FFOX == "True"):
         pass
