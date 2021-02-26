@@ -33,7 +33,7 @@ def parseEdgeBookmarks(filename):
     return url_list
 
 def createEdgeDatabase(urls):
-    #clears Favicons table
+    #deletes existing newFavicons file
     try:
         os.remove("Favicons")
     except:
@@ -81,7 +81,7 @@ def createEdgeDatabase(urls):
     cur.execute("SELECT * FROM icon_mapping")
 
     #makes new list of icon_ids
-    iconidList = []
+    iconIdList = []
     
     idNum = 1
     for row in cur.fetchall():
@@ -93,15 +93,38 @@ def createEdgeDatabase(urls):
                     WHERE page_url=?;
                """, (idNum, row[1]))
                
-               iconidList.append(row[2])
+               iconIdList.append(row[2])
                idNum += 1
     #commits changes
     newcon.commit()
     print("Changes committed!")
 
 
+    #grabs data from favicon_bitmaps
+    cur.execute("SELECT * FROM favicon_bitmaps")
     
-    
+    #list of favicon ids
+    bitmapIdList = []
+
+    idNum = 1
+    for row in cur.fetchall():
+        if (row[1] in iconIdList):
+            #adds second value of favicon to list
+            #num/2 is the id in favicons table
+            if (row[0] % 2 == 0):
+                bitmapIdList.append(row[0])
+            newcur.execute("INSERT INTO favicon_bitmaps VALUES(?,?,?,?,?,?,?);", row)
+            newcur.execute("""
+                    UPDATE favicon_bitmaps
+                    SET id=?
+                    WHERE last_updated=?;
+                    """, (idNum, row[2]))
+            idNum += 1
+    #commit changes
+    newcon.commit()
+    print(bitmapIdList)
+
+    #close databse curosrs and connections
     cur.close()
     newcur.close()
     con.close()
@@ -111,4 +134,3 @@ if __name__ == "__main__":
     urls = parseEdgeBookmarks(EDGE_BOOKMARKS_FILEPATH)
     print(len(urls))
     createEdgeDatabase(urls)
-
