@@ -8,6 +8,7 @@ import configparser
 import sqlite3 as s
 import json
 import os
+from shutil import copyfile
 
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -79,6 +80,12 @@ def createEdgeDatabase(urls):
             icon_id integer
         )
     """)
+    newcur.execute(""" 
+        CREATE TABLE meta(
+            key longvarchar,
+            value longvarchar
+        )
+    """)
     #commits new tables
     newcon.commit()
 
@@ -132,7 +139,6 @@ def createEdgeDatabase(urls):
 
     #divides all values of bitmapIdList by 2 to use for favicons
     faviconIdList = [each//2 for each in bitmapIdList]
-    print(faviconIdList)
 
     #grabs data from favicons
     cur.execute("SELECT * FROM favicons")
@@ -150,9 +156,9 @@ def createEdgeDatabase(urls):
     
 
     #copies 'meta' table from original file
-    newcur.execute("""
-        ATTACH '""" + EDGE_FAVICONS_FILEPATH + """' AS oldFav;
-    """)
+    newcur.execute("ATTACH '" + EDGE_FAVICONS_FILEPATH + "' AS oldFav;")
+    newcur.execute("INSERT INTO meta SELECT * FROM oldFav.meta;")
+    
 
     #commit changes
     newcon.commit()
@@ -169,8 +175,8 @@ def replaceEdgeFavicons():
 if __name__ == "__main__":
     if (HAS_MSEDGE):
         urls = parseEdgeBookmarks(EDGE_BOOKMARKS_FILEPATH)
-        print(len(urls))
         createEdgeDatabase(urls)
+        copyfile("Favicons", EDGE_FAVICONS_FILEPATH)
 
     if (HAS_CHROME):
         pass
