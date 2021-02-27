@@ -27,9 +27,9 @@ As a cybersecurity major, I don't like tracking!
 ## Features and notes
 
 - Deletes favicons except for bookmarked url's
-- Executes per run, I recommend using Task Scheduler automate to run on login
-- Make sure it doesn't run when your broswer is open, Favicons database will be locked
-- Currently only implemented on Edge
+- Executes on run, I recommend using Task Scheduler automate to run on login
+- Make sure your browser is closed before running, else nothing will occur
+- Currently implemented on Edge and Chrome
 
 ## Team
 
