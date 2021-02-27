@@ -12,14 +12,14 @@ from shutil import copyfile
 
 
 config = configparser.ConfigParser()
-config.read("config.ini")
+config.read("./resources/config.ini")
 # Gets settings data from config.ini
 USER_PATH = config.get("Settings", "USER_PATH")
 HAS_MSEDGE = config.getboolean("Settings", "HAS_MSEDGE")
 HAS_CHROME = config.getboolean("Settings", "HAS_CHROME")
 HAS_FFOX = config.getboolean("Settings", "HAS_FFOX")
 
-config.read("Whitelist.ini")
+config.read("./resources/Whitelist.ini")
 EXTRA_LINKS = config.get("Whitelist", "links")
 
 # Filepaths for msedge Favicons database and Bookmarks library
@@ -27,8 +27,10 @@ EDGE_FAVICONS_FILEPATH = USER_PATH + "/AppData/Local/Microsoft/Edge/User Data/De
 EDGE_BOOKMARKS_FILEPATH = USER_PATH +  "/AppData/Local/Microsoft/Edge/User Data/Default/Bookmarks"
 
 # Filepaths for Chrome Favicons database and Bookmarks library
-CHROME_FAVICONS_FILEPATH = USER_PATH + "/AppData/Local/Google/Chrome/UserData/Default/Favicons"
-CHROME_BOOKMARKS_FILEPATH = USER_PATH + "/AppData/Local/Google/Chrome/UserData/Default/Bookmarks"
+CHROME_FAVICONS_FILEPATH = USER_PATH + "/AppData/Local/Google/Chrome/User Data/Default/Favicons"
+CHROME_BOOKMARKS_FILEPATH = USER_PATH + "/AppData/Local/Google/Chrome/User Data/Default/Bookmarks"
+
+TEMPORARY_FAVICONS_FILE = "./resources/Favicons"
 
 '''
 Turns Whitelist.ini file into a list of provided strings
@@ -81,12 +83,12 @@ Copies new database over old database
 def createDatabase(urls, faviconsfile):
     # Deletes existing newFavicons file
     try:
-        os.remove("Favicons")
+        os.remove(TEMPORARY_FAVICONS_FILE)
     except:
         pass
 
     # Initializes new database
-    newcon = s.connect("Favicons")
+    newcon = s.connect(TEMPORARY_FAVICONS_FILE)
     newcur = newcon.cursor()
 
     # Creates favicon_bitmaps, favicons, and icon_mapping tables in local Favicons
@@ -208,12 +210,12 @@ if __name__ == "__main__":
     if (HAS_MSEDGE):
         urls = parseBookmarks(EDGE_BOOKMARKS_FILEPATH)
         createDatabase(urls, EDGE_FAVICONS_FILEPATH)
-        copyfile("Favicons", EDGE_FAVICONS_FILEPATH)
+        copyfile(TEMPORARY_FAVICONS_FILE, EDGE_FAVICONS_FILEPATH)
 
     if (HAS_CHROME):
         urls = parseBookmarks(CHROME_BOOKMARKS_FILEPATH)
         createDatabase(urls, CHROME_FAVICONS_FILEPATH)
-        copyfile("Favicons", CHROME_FAVICONS_FILEPATH)
+        copyfile(TEMPORARY_FAVICONS_FILE, CHROME_FAVICONS_FILEPATH)
     
     if (HAS_FFOX):
         pass
