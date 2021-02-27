@@ -60,7 +60,7 @@ def createDatabase(urls, faviconsfile):
     #creates favicon_bitmaps, favicons, and icon_mapping tables in local Favicons
     newcur.execute(""" 
         CREATE TABLE favicon_bitmaps(
-            id integer,
+            id integer PRIMARY KEY AUTOINCREMENT,
             icon_id integer,
             last_updated integer,
             image_data blob,
@@ -71,14 +71,14 @@ def createDatabase(urls, faviconsfile):
     """)
     newcur.execute(""" 
         CREATE TABLE favicons(
-            id integer,
+            id integer PRIMARY KEY AUTOINCREMENT,
             url longvarchar,
             icon_type integer
         )
     """)
     newcur.execute(""" 
         CREATE TABLE icon_mapping(
-            id integer,
+            id integer PRIMARY KEY AUTOINCREMENT,
             page_url longvarchar,
             icon_id integer
         )
@@ -126,6 +126,7 @@ def createDatabase(urls, faviconsfile):
     bitmapIdList = []
 
     idNum = 1
+    iconIdNum = 2
     for row in cur.fetchall():
         if (row[1] in iconIdList):
             #adds second row of a favicon to list
@@ -133,11 +134,17 @@ def createDatabase(urls, faviconsfile):
                 bitmapIdList.append(row[0])
             newcur.execute("INSERT INTO favicon_bitmaps VALUES(?,?,?,?,?,?,?);", row)
             newcur.execute("""
+                    UPDATE icon_mapping
+                    SET icon_id=?
+                    WHERE icon_id=?;
+                    """, (iconIdNum//2, row[1]))
+            newcur.execute("""
                     UPDATE favicon_bitmaps
-                    SET id=?
+                    SET id=?, icon_id=?
                     WHERE last_updated=?;
-                    """, (idNum, row[2]))
+                    """, (idNum, iconIdNum//2, row[2]))
             idNum += 1
+            iconIdNum += 1
     
 
     #divides all values of bitmapIdList by 2 to use for favicons
@@ -147,6 +154,7 @@ def createDatabase(urls, faviconsfile):
     cur.execute("SELECT * FROM favicons")
 
 
+    idNum = 1
     for row in cur.fetchall():
         if (row[0] in faviconIdList):
             newcur.execute("INSERT INTO favicons VALUES(?,?,?);", row)
@@ -154,7 +162,8 @@ def createDatabase(urls, faviconsfile):
                     UPDATE favicons
                     SET id=?
                     WHERE url=?;
-                    """, (row[0], row[1]))
+                    """, (idNum, row[1]))
+            idNum += 1
     
 
     #copies 'meta' table from original file
