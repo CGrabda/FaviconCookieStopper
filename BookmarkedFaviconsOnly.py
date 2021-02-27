@@ -10,21 +10,42 @@ import json
 import os
 from shutil import copyfile
 
+
 config = configparser.ConfigParser()
 config.read("config.ini")
-#gets settings data from config.ini
+# Gets settings data from config.ini
 USER_PATH = config.get("Settings", "USER_PATH")
-HAS_MSEDGE = config.get("Settings", "HAS_MSEDGE")
-HAS_CHROME = config.get("Settings", "HAS_CHROME")
-HAS_FFOX = config.get("Settings", "HAS_FFOX")
+HAS_MSEDGE = config.getboolean("Settings", "HAS_MSEDGE")
+HAS_CHROME = config.getboolean("Settings", "HAS_CHROME")
+HAS_FFOX = config.getboolean("Settings", "HAS_FFOX")
 
-#filepaths for msedge Favicons database and Bookmarks library
+config.read("Whitelist.ini")
+EXTRA_LINKS = config.get("Whitelist", "links")
+
+# Filepaths for msedge Favicons database and Bookmarks library
 EDGE_FAVICONS_FILEPATH = USER_PATH + "/AppData/Local/Microsoft/Edge/User Data/Default/Favicons"
 EDGE_BOOKMARKS_FILEPATH = USER_PATH +  "/AppData/Local/Microsoft/Edge/User Data/Default/Bookmarks"
 
-#filepaths for Chrome Favicons database and Bookmarks library
+# Filepaths for Chrome Favicons database and Bookmarks library
 CHROME_FAVICONS_FILEPATH = USER_PATH + "/AppData/Local/Google/Chrome/UserData/Default/Favicons"
 CHROME_BOOKMARKS_FILEPATH = USER_PATH + "/AppData/Local/Google/Chrome/UserData/Default/Bookmarks"
+
+def parseWhitelist(list):
+    string = ""
+    new_list = []
+
+    for item in list:
+        if (item == "\n" or item == ","):
+            if (string != ""):
+                new_list.append(string)
+            string = ""
+
+        else:
+            string += item
+    
+    return new_list
+
+
 
 def tupleToValueString(tuple): 
     string = "("
@@ -34,30 +55,38 @@ def tupleToValueString(tuple):
     return string
 
 def parseBookmarks(filename):
-    #stores list of bookmarked URLs
+    # Stores list of bookmarked URLs
     url_list = []
 
     with open(filename) as bookmarks:
-        #parses json bookmark data
+        # Parses json bookmark data
         bjs = json.load(bookmarks)
-        #goes through each bookmark and appens its url to list
+        # Goes through each bookmark and appens its url to list
         for each in bjs["roots"]["bookmark_bar"]["children"]:
             url_list.append(each["url"])
     
+    links = parseWhitelist(EXTRA_LINKS)
+
+    for link in links:
+        url_list.append(link)
+
     return url_list
 
+'''
+deletes the Favicons database in this folder, creates a new database
+'''
 def createDatabase(urls, faviconsfile):
-    #deletes existing newFavicons file
+    # Deletes existing newFavicons file
     try:
         os.remove("Favicons")
     except:
         pass
 
-    #initializes new database
+    # Initializes new database
     newcon = s.connect("Favicons")
     newcur = newcon.cursor()
 
-    #creates favicon_bitmaps, favicons, and icon_mapping tables in local Favicons
+    # Creates favicon_bitmaps, favicons, and icon_mapping tables in local Favicons
     newcur.execute(""" 
         CREATE TABLE favicon_bitmaps(
             id integer PRIMARY KEY AUTOINCREMENT,
@@ -89,22 +118,18 @@ def createDatabase(urls, faviconsfile):
             value longvarchar
         )
     """)
-    #commits new tables
     newcon.commit()
 
 
-    #initialize edge database
+    # Initialize edge database
     con = s.connect(faviconsfile)
     cur = con.cursor()
 
-    #grabs data from icon_mapping
     cur.execute("SELECT * FROM icon_mapping")
 
-    #makes new list of icon_ids
     iconIdList = []
     
-    #goes through database, matches icon maps to url in bookmark
-    #iconId list used to match with bitmaps
+    # Goes through database, matches icon maps to url in bookmark
     idNum = 1
     for row in cur.fetchall():
            if (row[1] in urls):
@@ -119,17 +144,14 @@ def createDatabase(urls, faviconsfile):
                idNum += 1
 
 
-    #grabs data from favicon_bitmaps
     cur.execute("SELECT * FROM favicon_bitmaps")
     
-    #list of favicon bitmap ids that correlate to favicons table
     bitmapIdList = []
 
     idNum = 1
     iconIdNum = 2
     for row in cur.fetchall():
         if (row[1] in iconIdList):
-            #adds second row of a favicon to list
             if (row[0] % 2 == 0):
                 bitmapIdList.append(row[0])
             newcur.execute("INSERT INTO favicon_bitmaps VALUES(?,?,?,?,?,?,?);", row)
@@ -147,12 +169,11 @@ def createDatabase(urls, faviconsfile):
             iconIdNum += 1
     
 
-    #divides all values of bitmapIdList by 2 to use for favicons
+    # Divides all values of bitmapIdList by 2 because 2 bitmaps per favicon
     faviconIdList = [each//2 for each in bitmapIdList]
 
-    #grabs data from favicons
-    cur.execute("SELECT * FROM favicons")
 
+    cur.execute("SELECT * FROM favicons")
 
     idNum = 1
     for row in cur.fetchall():
@@ -166,15 +187,14 @@ def createDatabase(urls, faviconsfile):
             idNum += 1
     
 
-    #copies 'meta' table from original file
+    # Copies 'meta' table from original file
     newcur.execute("ATTACH '" + faviconsfile + "' AS oldFav;")
     newcur.execute("INSERT INTO meta SELECT * FROM oldFav.meta;")
     
 
-    #commit changes
     newcon.commit()
 
-    #close databse curosrs and connections
+    # Close databse curosrs and connections
     cur.close()
     newcur.close()
     con.close()
@@ -184,15 +204,15 @@ def replaceEdgeFavicons():
     return
 
 if __name__ == "__main__":
-    if (HAS_MSEDGE == "True"):
+    if (HAS_MSEDGE):
         urls = parseBookmarks(EDGE_BOOKMARKS_FILEPATH)
         createDatabase(urls, EDGE_FAVICONS_FILEPATH)
         copyfile("Favicons", EDGE_FAVICONS_FILEPATH)
 
-    if (HAS_CHROME == "True"):
+    if (HAS_CHROME):
         urls = parseBookmarks(CHROME_BOOKMARKS_FILEPATH)
         createDatabase(urls, CHROME_FAVICONS_FILEPATH)
         copyfile("Favicons", CHROME_FAVICONS_FILEPATH)
     
-    if (HAS_FFOX == "True"):
+    if (HAS_FFOX):
         pass

@@ -16,7 +16,8 @@ The Favicon Cookie Stopping Script
 
 1. Download this repository
 2. Run startup.py and enter the necessary information
-3. Run the python script 'BookmarkedFaviconsOnly'
+3. Whitelist custom links as desired in Whitelist.ini
+4. Run the python script 'BookmarkedFaviconsOnly'
 
 ## Motivation
 
@@ -27,6 +28,7 @@ As a cybersecurity major, I don't like tracking!
 ## Features and notes
 
 - Deletes favicons except for bookmarked url's
+- Has Whitelist file to add custom URL's that are not bookmarked
 - Executes on run, I recommend using Task Scheduler automate to run on login
 - Make sure your browser is closed before running, else nothing will occur
 - Currently implemented on Edge and Chrome
