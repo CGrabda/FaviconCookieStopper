@@ -19,7 +19,7 @@ HAS_MSEDGE = config.getboolean("Settings", "HAS_MSEDGE")
 HAS_CHROME = config.getboolean("Settings", "HAS_CHROME")
 HAS_FFOX = config.getboolean("Settings", "HAS_FFOX")
 
-config.read("./resources/Whitelist.ini")
+config.read("Whitelist.ini")
 EXTRA_LINKS = config.get("Whitelist", "links")
 
 # Filepaths for msedge Favicons database and Bookmarks library
