@@ -30,6 +30,9 @@ EDGE_BOOKMARKS_FILEPATH = USER_PATH +  "/AppData/Local/Microsoft/Edge/User Data/
 CHROME_FAVICONS_FILEPATH = USER_PATH + "/AppData/Local/Google/Chrome/UserData/Default/Favicons"
 CHROME_BOOKMARKS_FILEPATH = USER_PATH + "/AppData/Local/Google/Chrome/UserData/Default/Bookmarks"
 
+'''
+Turns Whitelist.ini file into a list of provided strings
+'''
 def parseWhitelist(list):
     string = ""
     new_list = []
@@ -46,14 +49,9 @@ def parseWhitelist(list):
     return new_list
 
 
-
-def tupleToValueString(tuple): 
-    string = "("
-    for each in tuple:
-        string += str(each) + ", "
-    string += ")"
-    return string
-
+'''
+Parses the Bookmarks json file and returns a list of bookmarks
+'''
 def parseBookmarks(filename):
     # Stores list of bookmarked URLs
     url_list = []
@@ -73,7 +71,12 @@ def parseBookmarks(filename):
     return url_list
 
 '''
-deletes the Favicons database in this folder, creates a new database
+Deletes the Favicons database in this folder, creates a new database
+Populates new database with data that matches URL list provided
+
+url -> icon_mapping row -> icon_id -> favicon_bitmaps row -> id -> favicons
+Grabs data of all the links provided in the order following above, populates tables of new database
+Copies new database over old database
 '''
 def createDatabase(urls, faviconsfile):
     # Deletes existing newFavicons file
@@ -200,8 +203,6 @@ def createDatabase(urls, faviconsfile):
     con.close()
     newcon.close()
 
-def replaceEdgeFavicons():
-    return
 
 if __name__ == "__main__":
     if (HAS_MSEDGE):
