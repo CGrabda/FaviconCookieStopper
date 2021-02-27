@@ -1,4 +1,7 @@
 # FaviconCookieStopper
+<div align="center">
+	<img src="./resources/FaviconCookieStopperBanner.png" alt="No Favicon Cookies"/>
+</div>
 The Favicon Cookie Stopping Script
 
 ---
@@ -32,6 +35,7 @@ As a cybersecurity major, I don't like tracking!
 - Executes on run, I recommend using Task Scheduler automate to run on login
 - Make sure your browser is closed before running, else nothing will occur
 - Currently implemented on Edge and Chrome
+- There's probably a bug, please contact me if you encounter one!
 
 ## Team
 
