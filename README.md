@@ -35,9 +35,9 @@ As a cybersecurity major, I don't like tracking!
 - Executes on run, I recommend using Task Scheduler automate to run on login
 - Make sure your browser is closed before running, else nothing will occur
 - Currently implemented on Edge and Chrome
-- There's probably a bug, please contact me if you encounter one!
+- Please contact me if you encounter a bug!
 
-## Team
+## Author
 
 | [![Christopher Grabda](https://github.com/CGrabda.png?size=100)](https://github.com/CGrabda) |
 | -------------------------------------------------------------------------------------------- |
