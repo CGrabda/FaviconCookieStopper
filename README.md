@@ -9,9 +9,9 @@ The Favicon Cookie Stopping Script
 <!-- TOC -->
 
 - [How to use](#How-to-use)
-- [Motivation](#motivation)
-- [Features](#features)
-- [Team](#team)
+- [Motivation](#Motivation)
+- [Features](#Features-and-notes)
+- [Author](#Author)
 
 <!-- /TOC -->
 
