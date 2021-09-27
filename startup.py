@@ -20,21 +20,16 @@ def ynInput(message):
             return "True"
         elif (userInput == "n"):
             return "False"
-    
-def pathInput():
-    print()
-    try:
-        userInput = input("Please enter your user path exactly as shown\nC:/Users/cgrab \n> ")
-        userInput = userInput.strip()
-    except:
-        print("----------------\nInvalid Input\n----------------")
-    
-    return userInput
 
 if __name__ == "__main__":
     string = "[Settings]\n"
  
-    string += "USER_PATH: " + pathInput() +"\n"
+    try:
+        username = os.environ["USERNAME"]
+    except:
+        username = os.environ["USER"]
+        
+    string += "USER_PATH: C:/Users/" + username + "\n"
     string += "HAS_MSEDGE: " + ynInput("Would you like to use this on Microsoft Edge? (y/n)\n> ") + "\n"
     string += "HAS_CHROME: " + ynInput("Would you like to use this on Google Chrome? (y/n)\n> ") + "\n"
     # string += "HAS_FFOX: " + ynInput("Would you like to use this on FireFox? (y/n)\n> ") + "\n"
