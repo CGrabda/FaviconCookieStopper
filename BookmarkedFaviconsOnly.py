@@ -159,19 +159,25 @@ def createDatabase(urls, faviconsfile):
         if (row[1] in iconIdList):
             if (row[0] % 2 == 0):
                 bitmapIdList.append(row[0])
-            newcur.execute("INSERT INTO favicon_bitmaps VALUES(?,?,?,?,?,?,?);", row)
-            newcur.execute("""
-                    UPDATE icon_mapping
-                    SET icon_id=?
-                    WHERE icon_id=?;
-                    """, (iconIdNum//2, row[1]))
-            newcur.execute("""
-                    UPDATE favicon_bitmaps
+
+            # This statement prevents a duplicate bitmap from stopping execution, value must be unique
+            try:
+                newcur.execute("""
+                    UPDATE OR IGNORE favicon_bitmaps
                     SET id=?, icon_id=?
                     WHERE last_updated=?;
                     """, (idNum, iconIdNum//2, row[2]))
-            idNum += 1
-            iconIdNum += 1
+                newcur.execute("INSERT INTO favicon_bitmaps VALUES(?,?,?,?,?,?,?);", row)
+                newcur.execute("""
+                        UPDATE icon_mapping
+                        SET icon_id=?
+                        WHERE icon_id=?;
+                        """, (iconIdNum//2, row[1]))
+
+                idNum += 1
+                iconIdNum += 1
+            except:
+                pass
     
 
     # Divides all values of bitmapIdList by 2 because 2 bitmaps per favicon
