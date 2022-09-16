@@ -2,7 +2,9 @@
 <div align="center">
 	<img src="./resources/FaviconCookieStopperBanner.png" alt="No Favicon Cookies"/>
 </div>
-The Favicon Cookie Stopping Script
+The Favicon Cookie Stopping Script  
+
+**DEPRECATED** due to changes in browser favicon database structure
 
 ---
 
